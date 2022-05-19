@@ -1,0 +1,11 @@
+__pycache__
+
+*egg-info/
+venv/
+virtualenv/
+
+.env
+envvars
+
+.ipynb_checkpoints
+.vscode/
