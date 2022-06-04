@@ -79,7 +79,7 @@ Environment with `venv + pip` in Windows:
 ```
 python -m venv venv
 ./venv/Scripts/activate.bat
-pip install -r requirements.txt
+pip install -r requirements.common.txt -r requirements.jupyter.txt
 pip install -e core_ds4a_project
 ```
 
