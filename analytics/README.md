@@ -27,6 +27,13 @@ CLEAN_DATA_PATH = os.environ.get('CLEAN_DATA_PATH') or f'{ROOT_DATA_PATH}/clean'
 
 So, you can setup a single root directory of data or setup custom locations. All through environment variables.
 
+
+
+
+
+
+In CARTERA dataset, FECHA_CIERRE is a datetime column that is created in dataset reading function by extracting corresponding value from each file name.
+
 ## Environment
 
 ### `.env` or `environment`
