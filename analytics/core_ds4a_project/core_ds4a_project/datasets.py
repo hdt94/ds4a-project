@@ -185,22 +185,43 @@ def read_cartera(
     df = pd.concat(dfs).reset_index(drop=True)
 
     if clean_ids or clean_all:
+        # OBLIGACION
         ind = df['OBLIGACION'].isna()
         df = df[~ind]
-
         cleaning.cast_float_to_int_in_place(df, columns=['OBLIGACION'])
 
+        counts_obligacion_per_cierre = df.groupby(by=['FECHA_CIERRE', 'OBLIGACION']).size()
+        one_obligacion_per_cierre = (counts_obligacion_per_cierre == 1).all()
+        assert one_obligacion_per_cierre, "There are multiple OBLIGACION per FECHA_CIERRE"
+
+        # Dropping inconsistent records
+        ind_porcentaje_pago_na = df['PORCENTAJE_PAGO'].isna()
+        df = (
+            df[~ind_porcentaje_pago_na]
+            .query('~((CLIENTE == "FA8913") & (OBLIGACION == 178000341))')    
+        )
+
+        # CLIENTE
         ind = df['CLIENTE'].str.match('#N/D').fillna(False)
         df.loc[ind, 'CLIENTE'] = np.nan
 
-        df = (
-            df
-            .query('~(CLIENTE == "FA8913" & OBLIGACION == 178000341)')
-            .query('~(CLIENTE.isna() & OBLIGACION == 191003960 & FECHA_CIERRE == "2019-12-31")')
-        )
-
         cliente_obligacion_df = df[['CLIENTE', 'OBLIGACION']].drop_duplicates()
-        obligacion_size_ss = cliente_obligacion_df.groupby('OBLIGACION').size()
+
+        obligacion_size_ss = (
+            cliente_obligacion_df
+            .dropna()
+            .groupby('OBLIGACION')
+            .size()
+        )
+        one_cliente_per_obligacion = (obligacion_size_ss == 1).all()
+        assert one_cliente_per_obligacion, "There are multiple CLIENT for single OBLIGACION"
+
+        obligacion_size_ss = (
+            cliente_obligacion_df
+            .groupby('OBLIGACION')
+            .size()
+        )
+        assert obligacion_size_ss.max() == 2, "There are more than two CLIENT per OBLIGACION"
         obligacion_ids = obligacion_size_ss[obligacion_size_ss == 2].index
         cliente_obligacion_ss = (
             cliente_obligacion_df
@@ -215,6 +236,7 @@ def read_cartera(
         ind_in_definition = df['OBLIGACION'].isin(defs_ss.index)
         ind = ind_na & ind_in_definition
         df.loc[ind, 'CLIENTE'] = defs_ss.loc[df.loc[ind, 'OBLIGACION']].values
+        df = df.dropna(subset='CLIENTE')
 
     if bool(relations_filter):
         df = relations_filter.filter_dataframe('cartera', df)
@@ -231,28 +253,38 @@ def read_cartera(
                    .str.strip()
                    .str.replace(',', '')
                    .astype('int64')),
-            OBLIGACION=df['OBLIGACION'].astype('int64'),
+            SALDO=(df['SALDO']
+                   .str.replace(',', '')
+                   .astype('int64')),
         )
     )
-
-    ind_na = df['OBLIGACION'].isna()
-    ind_invalid = (
-        # inconsistencies in first records
-        (
-            (df['OBLIGACION'] == 1914000001)
-            & (df['FECHA_CIERRE'] == '2019-09-30')
-        )
-        # |
-    )
-    df = df[~ind_na & ~ind_invalid]
 
     ind_numeric = df['FECHA_ULT_PAGO'].str.match(r'^\d+$').fillna(False)
     df.loc[ind_numeric, 'FECHA_ULT_PAGO'] = np.nan
-
     cleaning.cast_dates_in_place(df, exclude=['FECHA_CIERRE'])
+
+    cleaning.cast_float_to_int_in_place(
+        df, columns=['CUOTAS_PACTADAS', 'CUOTAS_PENDIENTES'])
+
+    cleaning.cast_float_to_int_in_place(df, columns=['DIAS_VENCIDO'])
+
+    df['PORCENTAJE_PAGO'] = df['PORCENTAJE_PAGO'].str.strip()
+    ind = df['PORCENTAJE_PAGO'].str.match('^\.\d{1,2}$').fillna(False)
+    df.loc[ind, 'PORCENTAJE_PAGO'] = (
+        df.loc[ind, 'PORCENTAJE_PAGO']
+        .str.replace(r'^.', '', regex=True)
+        .astype(int)
+    )
+    df['PORCENTAJE_PAGO'] = (
+        df['PORCENTAJE_PAGO']
+        .replace('######', 100)
+        .astype(float)
+    )
 
     ind = df['FECHA_CIERRE'] == "2019-12-31"
     df.loc[ind, ['TASA_ANUAL', 'TASA_PERIODICA']] /= 100
+
+    df['TIPO_CREDITO'] = df['TIPO_CREDITO'].replace('SIN PERFIL', 'SIN_PERFIL')
 
     return df.sort_values(by=['FECHA_CIERRE', 'OBLIGACION'])
 
