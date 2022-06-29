@@ -362,25 +362,6 @@ SENSITIVE_COLUMNS = [
     'IDENTI_EJECUTIVO',
 ]
 
-# AP014MCLIENTEv3 (1) lok.xlsx
-SUCURSAL_COD_DICT = {
-    "1": "YOPAL",
-    "2": "VILLAVICENCIO",
-    "3": "ACACIAS",
-    "4": "AGUAZUL",
-    "5": "CUMARAL",
-    "6": "GRANADA",
-    "7": "MONTERREY",
-    "8": "PAZ DE ARIPORO",
-    "9": "SOGAMOSO",
-    "10": "TAURAMENA",
-    "11": "VILLANUEVA",
-    "12": "TAME",
-    "13": "DUITAMA",
-    "14": "TUNJA",
-    "15": "SARAVENA"
-}
-
 
 TIPO_VIVIENDA_CATEGORIES = [
     'ARRIENDO',

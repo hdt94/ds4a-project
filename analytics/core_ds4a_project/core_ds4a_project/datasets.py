@@ -7,6 +7,7 @@ import pandas as pd
 
 from core_ds4a_project import cleaning
 from core_ds4a_project import columns as project_columns
+from core_ds4a_project import location
 from core_ds4a_project.cleaning import normalize_columns_name
 
 
@@ -268,6 +269,20 @@ def read_cartera(
 
     cleaning.cast_float_to_int_in_place(df, columns=['DIAS_VENCIDO'])
 
+    replace_dict = {
+        'FIRABITOBA': 'FIRAVITOBA',
+        'NUCHIA': 'NUNCHIA',
+        'Default': np.nan,
+    }
+    df['MUNICIPIO_CLIENTE'] = (
+        df['MUNICIPIO_CLIENTE']
+        .replace(replace_dict)
+        .astype('category')
+    )
+    df = df.merge(location.coords_df, how='left', on='MUNICIPIO_CLIENTE')
+
+    df['PERIODICIDAD_PAGO'] = df['PERIODICIDAD_PAGO'].astype('category')
+
     df['PORCENTAJE_PAGO'] = df['PORCENTAJE_PAGO'].str.strip()
     ind = df['PORCENTAJE_PAGO'].str.match('^\.\d{1,2}$').fillna(False)
     df.loc[ind, 'PORCENTAJE_PAGO'] = (
@@ -280,6 +295,24 @@ def read_cartera(
         .replace('######', 100)
         .astype(float)
     )
+
+    df['SUCURSAL_COD'] = (
+        df['SUCURSAL_COD']
+        .replace('#N/D', np.nan)
+    )
+    ind_str = df['SUCURSAL_COD'].apply(lambda x: isinstance(x, str))
+    all_str_numeric = (
+        df
+        .loc[ind_str, 'SUCURSAL_COD']
+        .str.match(r'\d+')
+        .all()
+    )
+    assert all_str_numeric, "There are non-numeric SUCURSAL_COD"
+    df.loc[ind_str, 'SUCURSAL_COD'] = (
+        df.loc[ind_str, 'SUCURSAL_COD']
+        .astype(int)
+    )
+    df['SUCURSAL_COD'] = df['SUCURSAL_COD'].astype('category')
 
     ind = df['FECHA_CIERRE'] == "2019-12-31"
     df.loc[ind, ['TASA_ANUAL', 'TASA_PERIODICA']] /= 100
