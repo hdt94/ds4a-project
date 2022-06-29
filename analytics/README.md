@@ -68,6 +68,7 @@ Examples of `envars`:
 
 Environment with `conda` (multiplatform):
 ```
+conda config --append channels conda-forge
 conda create -n ds4a python=3.8
 conda activate ds4a
 conda install --file requirements.common.txt --file requirements.jupyter.txt
@@ -94,6 +95,7 @@ pip install -e core_ds4a_project
 
 Environment with `conda` (multiplatform):
 ```
+conda config --append channels conda-forge
 conda create -n ds4a python=3.8
 conda activate ds4a
 conda install --file requirements.common.txt --file requirements.production.txt
