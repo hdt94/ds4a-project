@@ -60,6 +60,36 @@ def compare_dataframes(d1, d2, sort_by):
     )
 
 
+def compare_dataframes_diff(d1, d2, sort_by, d1_name="d1", d2_name="d2"):
+    if (d1.shape[0] != d2.shape[0]):
+        return ({
+            "rows": {
+                d1_name: d1.shape[0],
+                d2_name: d2.shape[0],
+            }
+        })
+
+    cols = d1.columns.sort_values()
+    if (not cols.equals(d2.columns.sort_values())):
+        return ({
+            "cols_names": {
+                d1_name: set(d1.columns).difference(d2.columns),
+                d2_name: set(d2.columns).difference(d1.columns),
+            }
+        })
+
+    d1 = d1[cols].sort_values(sort_by).reset_index(drop=True)
+    d2 = d2[cols].sort_values(sort_by).reset_index(drop=True)
+
+    ind = pd.Series([d1[col].equals(d2[col]) for col in cols])
+    if (ind.all()):
+        return {}
+
+    return ({
+        "cols_diff": d1.columns[~ind]
+    })
+
+
 def compare_series(df, col1, col2):
     s1 = df[col1]
     s2 = df[col2]
