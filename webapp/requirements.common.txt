@@ -1,0 +1,5 @@
+dash==2.5.1
+dash-bootstrap-components==1.2.0
+Flask-Caching==1.11.1
+pandas==1.4.2
+python-dotenv==0.20.0
