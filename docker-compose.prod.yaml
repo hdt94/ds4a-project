@@ -1,0 +1,21 @@
+services:
+  dash-app:
+    build: ./webapp
+    volumes:
+      - ./data/clean:/datasets/
+    environment:
+    - DATASETS_DIR=/datasets/
+    - ENV=production
+    - REDIS_URL=redis://dash-cache:6379
+    # - REDIS_URL=redis://127.0.0.1:5050
+    - RECOMMEND_URL=http://recommendations:80
+    depends_on:
+    - dash-cache
+    - recommendations
+    ports:
+    - 80:80
+  recommendations:
+    build: ./services/recommendations
+    expose:
+    - 80
+

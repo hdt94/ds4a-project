@@ -4,7 +4,20 @@
 
 ### Production
 
-PENDING
+```bash
+ANALYTICS_DIR=$PROJECT_ROOT/analytics/
+mkdir -p
+
+mkdir -p packages/
+cp $PROJECT_ROOT/requirements.common.txt $PROJECT_ROOT/requirements.production.txt packages/
+cp -r ${ANALYTICS_DIR}/core_ds4a_project/ ./packages
+cp -r $PROJECT_ROOT/analytics/core_ds4a_project packages/core_ds4a_project
+docker run \
+    --name dash-app \
+    -p 80 \
+    -e REDIS_URL=redis://localhost:6379 \
+    .
+```
 
 ### Development
 
@@ -26,10 +39,10 @@ Dependencies:
 ANALYTICS_DIR=$PROJECT_ROOT/analytics/
 pip install \
     -r requirements.common.txt \
-    -r "requirements.dev.txt "\
+    -r requirements.dev.txt \
     -r "${ANALYTICS_DIR}/requirements.common.txt" \
     -r "${ANALYTICS_DIR}/requirements.jupyter.txt"
-pip install -e "${ANALYTICS_DIR}//core_ds4a_project"
+pip install -e "${ANALYTICS_DIR}/core_ds4a_project"
 ```
 
 Example of environment variables in `.env` or `envvars` file:
@@ -47,6 +60,10 @@ debug=1 python app.py
 ```
 
 Ignore `debug=1` if using Python debugger from VSCode or similar.
+
+### Additionals
+
+In Unix=like it may be required to install 
 
 ## Notes
 
