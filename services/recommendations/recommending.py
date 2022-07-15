@@ -64,7 +64,8 @@ class Models(object):
 
     def load_models(self, dir_path):
         self.model_defaulting = joblib.load(
-            os.path.join(dir_path, 'model_defaulting'))
+            os.path.join(dir_path, 'pipe_defaulting'))
+            # os.path.join(dir_path, 'model_defaulting'))
         self.model_monto = joblib.load(os.path.join(dir_path, 'model_monto'))
 
         file = os.path.join(
@@ -91,22 +92,23 @@ class Models(object):
     def predict_defaulting(self, df):
         df = df.copy()
 
-        cmap = self.catmap_defaulting
+        # cmap = self.catmap_defaulting
         dcols = self.get_defaulting_cols()
 
-        df = df.astype({'TIPO_UBICACION_COD': str})
+        df = df.astype({'ESTRATO': float}).astype(str)
+        #df = df.astype({'TIPO_UBICACION_COD': str})
 
-        for c in dcols:
-            if (df[c].isna().any()):
-                df[c] = df[c].astype(str).replace('nan', 'NaN')
+        # for c in dcols:
+        #     if (df[c].isna().any()):
+        #         df[c] = df[c].astype(str).replace('nan', 'NaN')
 
-            ind_valid = df[c].isin(cmap[c].keys())
-            if (ind_valid.all() == False):
-                unknowns = df.loc[~ind_valid, c]
-                error_message = format_unknowns_error(c, unknowns)
-                return (error_message, None)
+        #     ind_valid = df[c].isin(cmap[c].keys())
+        #     if (ind_valid.all() == False):
+        #         unknowns = df.loc[~ind_valid, c]
+        #         error_message = format_unknowns_error(c, unknowns)
+        #         return (error_message, None)
 
-            df[c] = df[c].replace(cmap[c])
+        #     df[c] = df[c].replace(cmap[c])
 
         try:
             error_message = None
