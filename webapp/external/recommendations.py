@@ -1,9 +1,8 @@
-import json
 import os
-from turtle import up
 
 from urllib.parse import urljoin
 
+import pandas as pd
 import requests
 
 from utils.upload import UploadIO
@@ -31,8 +30,8 @@ def request_recommendations(upload):
     res = requests.post(url, files=body)
 
     if res.ok:
-        recommendations = json.loads(res.text)
-        return (None, recommendations)
+        recomm_df = pd.DataFrame(res.json())
+        return (None, recomm_df)
 
     error = res.text
     return (error, None)
